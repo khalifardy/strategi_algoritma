@@ -113,3 +113,90 @@ def greedy(by, data, modal):
                 break
 
     return objek_terpilih
+
+
+def value_ub(profit, modal_awal, total_modal, densitas):
+
+    sisa_modal = modal_awal - total_modal
+    pengali = sisa_modal * densitas
+    return profit + pengali
+
+
+def sorted_densitas(data, key, key2):
+    data1 = data.copy()
+    densitas_list = []
+    for i in data1:
+        i["densitas"] = i[key]/i[key2]
+        densitas_list.append(i)
+
+    return sorted(densitas_list, key=lambda x: x["densitas"], reverse=True)
+
+
+def branch_and_bound(data, key1, key2, modal_awal):
+    densitas_list = sorted_densitas(data, key1, key2)
+    total_modal = 0
+    profit = 0
+    ub_awal = value_ub(profit, modal_awal, total_modal,
+                       densitas_list[0]['densitas'])
+    object_terpilih = []
+    print("mulai iterasi")
+    print("ub_awal: {}".format(ub_awal))
+    print("profit: {}".format(profit))
+    print("modal: {}".format(total_modal))
+    print("\n")
+    string = ["*"]*len(densitas_list)
+
+    for i in range(len(densitas_list)-1):
+
+        print(string)
+        ub_1 = value_ub(densitas_list[i]["profit"]+profit, modal_awal,
+                        densitas_list[i]["modal"]+total_modal, densitas_list[i+1]['densitas'])
+        ub_0 = value_ub(profit, modal_awal, total_modal,
+                        densitas_list[i+1]['densitas'])
+
+        print("iterasi ke-{}".format(i+1))
+        string[i] = "1"
+        print(",".join(string))
+        print(ub_1)
+        print("P:{}, M:{}\n".format(
+            densitas_list[i]["profit"]+profit, densitas_list[i]["modal"]+total_modal))
+        string[i] = "*"
+
+        string[i] = "0"
+        print(",".join(string))
+        print(ub_0)
+        print("P:{}, M:{}\n".format(profit, total_modal))
+        string[i] = "*"
+
+        if ub_1 >= ub_0 and modal_awal >= total_modal+densitas_list[i]["modal"]:
+            object_terpilih.append(densitas_list[i])
+            string[i] = "1"
+            profit += densitas_list[i]["profit"]
+            total_modal += densitas_list[i]["modal"]
+        else:
+            string[i] = "0"
+
+    print("iterasi terakhir")
+    string[-1] = "1"
+    print(",".join(string))
+    print("P:{}, M:{}\n".format(
+        densitas_list[-1]["profit"]+profit, densitas_list[-1]["modal"]+total_modal))
+    string[-1] = "*"
+
+    string[-1] = "0"
+    print(",".join(string))
+    print("P:{}, M:{}\n".format(
+        profit, total_modal))
+    string[-1] = "*"
+
+    if modal_awal >= total_modal + densitas_list[-1]["modal"]:
+        object_terpilih.append(densitas_list[-1])
+        string[-1] = "1"
+        profit += densitas_list[i]["profit"]
+        total_modal += densitas_list[i]["modal"]
+    else:
+        string[-1] = "0"
+
+    print(string)
+
+    return object_terpilih
