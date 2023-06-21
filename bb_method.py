@@ -1,4 +1,5 @@
 from strategi import branch_and_bound
+from datetime import datetime
 
 data = [
     {
@@ -31,8 +32,11 @@ data = [
         'profit': 100
     }
 ]
-
+start = datetime.now().second
 objek_terpilih = branch_and_bound(data, "profit", "modal", 500)
+end = datetime.now().second
+
+print("running Time: {}".format(end-start))
 print("\n")
 print("Objek terpilih: ")
 profit = 0
